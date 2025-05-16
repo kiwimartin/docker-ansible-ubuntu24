@@ -108,6 +108,7 @@
 - name: Print rootless Docker info
   become: true
   ansible.builtin.command: "machinectl shell {{ docker_user }}@ /usr/bin/docker info"
+  register: docker_info
   when: docker_install_mode == 'rootless'
   ignore_errors: true
 
