@@ -44,7 +44,7 @@
 - name: Add user to docker group
   become: true
   ansible.builtin.user:
-    name: "{{ docker_user | default(ansible_user_id) }}"
+    name: "{{ docker_user }}"
     groups: docker
     append: yes
   when: docker_install_mode != 'rootless'
@@ -64,12 +64,12 @@
   environment:
     DOCKER_CHANNEL: stable
   args:
-    creates: "/home/{{ docker_user | default(ansible_user_id) }}/bin/dockerd-rootless.sh"
+    creates: "/home/{{ docker_user }}/bin/dockerd-rootless.sh"
   when: docker_install_mode == 'rootless'
 
 - name: Enable linger for rootless user (systemd user units allowed after logout)
   become: true
-  ansible.builtin.command: "loginctl enable-linger {{ docker_user | default(ansible_user_id) }}"
+  ansible.builtin.command: "loginctl enable-linger {{ docker_user }}"
   when: docker_install_mode == 'rootless'
 
 - name: Enable and start docker.service (systemd, normal mode)
