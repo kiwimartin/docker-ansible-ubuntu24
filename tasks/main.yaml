@@ -104,6 +104,12 @@
   ansible.builtin.command: docker info
   register: docker_info
   ignore_errors: true
+  when: docker_install_mode == 'normal'
+
+- name: Print rootless Docker info
+  become: true
+  ansible.builtin.command: "machinectl shell {{ docker_user }}@ /usr/bin/docker info"
+  when: docker_install_mode == 'rootless'
 
 - name: Show Docker info
   ansible.builtin.debug:
