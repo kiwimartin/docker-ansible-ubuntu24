@@ -1,0 +1,3 @@
+---
+docker_install_mode: "normal"  # "normal" oder "rootless"
+docker_user: "{{ ansible_user_id }}"
