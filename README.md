@@ -2,6 +2,8 @@
 
 Diese Ansible-Rolle installiert Docker Engine (inkl. Docker Compose & optional Rootless Mode) für Ubuntu 24.04 LTS.
 
+Erstellt mit Github Copilot.
+
 ## Verwendung
 
 Erstelle ein Playbook, z.B. `site.yml`:
