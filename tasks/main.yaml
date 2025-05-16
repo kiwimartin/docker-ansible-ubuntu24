@@ -15,6 +15,7 @@
           - curl
           - gnupg
           - lsb-release
+          - systemd-container
         update_cache: yes
 
     - name: Add Docker’s official GPG key
@@ -65,14 +66,25 @@
         state: present
       when: docker_install_mode == 'rootless'
 
-    - name: Install Docker Rootless (script)
-      ansible.builtin.shell: |
-        curl -fsSL https://get.docker.com/rootless | sh
-      environment:
-        DOCKER_CHANNEL: stable
-      args:
-        creates: "/home/{{ docker_user }}/bin/dockerd-rootless.sh"
+    - name: Stop and disable docker.service (systemd, rootless mode)
+      become: true
+      ansible.builtin.systemd:
+        name: docker
+        enabled: false
+        state: stopped
+      when: docker_install_mode != 'rootless'
+
+
+    - name: Enable machinectl user access for rootless Docker
+      become: true
+      ansible.builtin.command: "machinectl shell {{ docker_user }}@ /usr/bin/dockerd-rootless-setuptool.sh install"
       when: docker_install_mode == 'rootless'
+
+    - name: Enable rootless Docker
+      become: true
+      ansible.builtin.command: "machinectl shell {{ docker_user }}@ /usr/bin/systemctl --user enable --now docker"
+      when: docker_install_mode == 'rootless'
+
 
     - name: Enable linger for rootless user (systemd user units allowed after logout)
       become: true
@@ -87,18 +99,6 @@
         state: started
       when: docker_install_mode != 'rootless'
 
-    - name: Start rootless docker as user (systemd user unit)
-      ansible.builtin.shell: |
-        XDG_RUNTIME_DIR=/run/user/$(id -u) systemctl --user enable docker
-        XDG_RUNTIME_DIR=/run/user/$(id -u) systemctl --user start docker
-      args:
-        executable: /bin/bash
-      when: docker_install_mode == 'rootless'
-  when: docker_check.rc != 0
-  rescue:
-    - name: Print error if Docker installation failed
-      ansible.builtin.debug:
-        msg: "Docker installation failed."
 
 - name: Print Docker info
   ansible.builtin.command: docker info
