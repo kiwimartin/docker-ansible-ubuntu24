@@ -103,6 +103,7 @@
 - name: Print Docker info
   ansible.builtin.command: docker info
   register: docker_info
+  become: true
   when: docker_install_mode != 'rootless'
 
 - name: Print rootless Docker info
