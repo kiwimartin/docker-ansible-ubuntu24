@@ -16,6 +16,7 @@
           - gnupg
           - lsb-release
           - systemd-container
+          - uidmap
         update_cache: yes
 
     - name: Add Docker’s official GPG key
