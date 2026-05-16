@@ -3,4 +3,6 @@
   systemd:
     name: docker
     state: restarted
+  become: true
   when: docker_install_mode != 'rootless'
+
