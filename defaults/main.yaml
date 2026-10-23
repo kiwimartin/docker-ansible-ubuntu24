@@ -1,3 +1,9 @@
 ---
 docker_install_mode: "normal"  # "normal" oder "rootless"
 docker_user: "docker-user"  # Benutzername für rootless Docker
+
+# Optional proxy configuration for the Docker daemon.
+docker_proxy:
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""

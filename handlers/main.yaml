@@ -1,8 +1,36 @@
 ---
 - name: Restart docker
-  systemd:
+  ansible.builtin.systemd:
     name: docker
+    daemon_reload: true
     state: restarted
   become: true
   when: docker_install_mode != 'rootless'
+
+- name: Reload rootless Docker systemd
+  become: true
+  ansible.builtin.command:
+    argv:
+      - machinectl
+      - shell
+      - "{{ docker_user }}@"
+      - /usr/bin/systemctl
+      - --user
+      - daemon-reload
+  changed_when: true
+  when: docker_install_mode == 'rootless'
+
+- name: Restart rootless Docker
+  become: true
+  ansible.builtin.command:
+    argv:
+      - machinectl
+      - shell
+      - "{{ docker_user }}@"
+      - /usr/bin/systemctl
+      - --user
+      - restart
+      - docker
+  changed_when: true
+  when: docker_install_mode == 'rootless'
 

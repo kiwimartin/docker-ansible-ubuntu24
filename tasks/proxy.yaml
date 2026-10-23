@@ -1,0 +1,68 @@
+---
+- name: Determine whether a Docker proxy is configured
+  ansible.builtin.set_fact:
+    _docker_proxy_enabled: >-
+      {{
+        (docker_proxy.http_proxy | default('') | string | length > 0)
+        or (docker_proxy.https_proxy | default('') | string | length > 0)
+        or (docker_proxy.no_proxy | default('') | string | length > 0)
+      }}
+
+- name: Look up rootless Docker user
+  become: true
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ docker_user }}"
+    fail_key: true
+  when: docker_install_mode == 'rootless'
+
+- name: Set Docker proxy paths
+  ansible.builtin.set_fact:
+    _docker_proxy_directory: >-
+      {{
+        '/etc/systemd/system/docker.service.d'
+        if docker_install_mode != 'rootless'
+        else ansible_facts.getent_passwd[docker_user][4] ~ '/.config/systemd/user/docker.service.d'
+      }}
+    _docker_proxy_owner: "{{ 'root' if docker_install_mode != 'rootless' else docker_user }}"
+    _docker_proxy_group: >-
+      {{
+        'root'
+        if docker_install_mode != 'rootless'
+        else ansible_facts.getent_passwd[docker_user][2]
+      }}
+
+- name: Create Docker proxy configuration directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ _docker_proxy_directory }}"
+    state: directory
+    owner: "{{ _docker_proxy_owner }}"
+    group: "{{ _docker_proxy_group }}"
+    mode: "0755"
+  when: _docker_proxy_enabled
+
+- name: Configure Docker proxy environment
+  become: true
+  ansible.builtin.template:
+    src: docker-proxy.conf.j2
+    dest: "{{ _docker_proxy_directory }}/99-ansible-proxy.conf"
+    owner: "{{ _docker_proxy_owner }}"
+    group: "{{ _docker_proxy_group }}"
+    mode: "0600"
+  when: _docker_proxy_enabled
+  notify:
+    - Restart docker
+    - Reload rootless Docker systemd
+    - Restart rootless Docker
+
+- name: Remove disabled Docker proxy configuration
+  become: true
+  ansible.builtin.file:
+    path: "{{ _docker_proxy_directory }}/99-ansible-proxy.conf"
+    state: absent
+  when: not _docker_proxy_enabled
+  notify:
+    - Restart docker
+    - Reload rootless Docker systemd
+    - Restart rootless Docker

@@ -20,7 +20,29 @@ Erstelle ein Playbook, z.B. `site.yml`:
 
 ## Variablen
 
-Siehe `roles/docker/defaults/main.yml` für alle verfügbaren Variablen.
+Siehe `defaults/main.yaml` für alle verfügbaren Variablen.
+
+### Docker-Daemon-Proxy
+
+Ein Proxy für Image-Pulls und Registry-Zugriffe kann pro Host in `host_vars`
+konfiguriert werden:
+
+```yaml
+docker_proxy:
+  http_proxy: "http://proxy.example.org:3128"
+  https_proxy: "http://proxy.example.org:3128"
+  no_proxy: "localhost,127.0.0.1,.example.org"
+```
+
+Es werden nur Werte gesetzt, die nicht leer sind. Um die von der Rolle
+verwaltete Proxy-Konfiguration wieder zu entfernen, alle Werte leer lassen
+oder `docker_proxy` nicht setzen. Manuell angelegte systemd-Drop-ins werden
+nicht verändert.
+
+Die Proxy-Einstellungen gelten nur für den Docker-Daemon, nicht für APT oder
+andere Installationsschritte der Rolle. Normaler und Rootless-Betrieb werden
+unterstützt. Proxy-URLs mit Zugangsdaten sollten nicht im Klartext eingecheckt,
+sondern zum Beispiel mit Ansible Vault verschlüsselt werden.
 
 ## Features
 

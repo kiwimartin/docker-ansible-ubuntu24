@@ -1,0 +1,10 @@
+[Service]
+{% if docker_proxy.http_proxy | default('') | string | length > 0 %}
+Environment={{ ('HTTP_PROXY=' ~ docker_proxy.http_proxy) | to_json }}
+{% endif %}
+{% if docker_proxy.https_proxy | default('') | string | length > 0 %}
+Environment={{ ('HTTPS_PROXY=' ~ docker_proxy.https_proxy) | to_json }}
+{% endif %}
+{% if docker_proxy.no_proxy | default('') | string | length > 0 %}
+Environment={{ ('NO_PROXY=' ~ docker_proxy.no_proxy) | to_json }}
+{% endif %}
