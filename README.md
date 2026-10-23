@@ -51,6 +51,7 @@ sondern zum Beispiel mit Ansible Vault verschlüsselt werden.
 ## Features
 
 - Installation von Docker Engine, Compose, Buildx
+- Eindeutige Docker-APT-Quelle mit dediziertem `signed-by`-Schlüssel
 - Optionale Installation und Aktivierung von Rootless Docker (systemd user units, linger)
 - Handler für Neustart im Normalbetrieb
 
