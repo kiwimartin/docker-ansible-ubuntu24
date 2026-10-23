@@ -1,4 +1,35 @@
 ---
+- name: Build proxy environment for Docker installation
+  ansible.builtin.set_fact:
+    _docker_install_proxy_environment: >-
+      {{
+        {}
+        | combine(
+            {
+              'HTTP_PROXY': docker_proxy.http_proxy,
+              'http_proxy': docker_proxy.http_proxy
+            }
+            if docker_proxy.http_proxy | default('') | string | length > 0
+            else {}
+          )
+        | combine(
+            {
+              'HTTPS_PROXY': docker_proxy.https_proxy,
+              'https_proxy': docker_proxy.https_proxy
+            }
+            if docker_proxy.https_proxy | default('') | string | length > 0
+            else {}
+          )
+        | combine(
+            {
+              'NO_PROXY': docker_proxy.no_proxy,
+              'no_proxy': docker_proxy.no_proxy
+            }
+            if docker_proxy.no_proxy | default('') | string | length > 0
+            else {}
+          )
+      }}
+
 - name: Check if Docker is already installed
   ansible.builtin.command: docker --version
   register: docker_check
@@ -99,6 +130,7 @@
         enabled: true
         state: started
       when: docker_install_mode != 'rootless'
+  environment: "{{ _docker_install_proxy_environment }}"
 
 - name: Configure Docker daemon proxy
   ansible.builtin.include_tasks: proxy.yaml

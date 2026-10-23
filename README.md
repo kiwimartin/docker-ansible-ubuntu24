@@ -39,8 +39,12 @@ verwaltete Proxy-Konfiguration wieder zu entfernen, alle Werte leer lassen
 oder `docker_proxy` nicht setzen. Manuell angelegte systemd-Drop-ins werden
 nicht verändert.
 
-Die Proxy-Einstellungen gelten nur für den Docker-Daemon, nicht für APT oder
-andere Installationsschritte der Rolle. Normaler und Rootless-Betrieb werden
+Die Proxy-Einstellungen gelten sowohl für den Docker-Daemon als auch für die
+Installationsschritte dieser Rolle (zum Beispiel den Download des GPG-Schlüssels
+und die APT-Aufrufe). Dafür werden die konfigurierten Werte während des
+Installationsblocks zusätzlich als `HTTP_PROXY`, `HTTPS_PROXY` und `NO_PROXY`
+sowie in Kleinschreibung gesetzt. Andere Rollen und Prozesse auf dem Host
+werden dadurch nicht beeinflusst. Normaler und Rootless-Betrieb werden
 unterstützt. Proxy-URLs mit Zugangsdaten sollten nicht im Klartext eingecheckt,
 sondern zum Beispiel mit Ansible Vault verschlüsselt werden.
 
